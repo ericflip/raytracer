@@ -1,2 +1,8 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class Viewport:
-    pass
+    height: float
+    width: float
+    d: float
