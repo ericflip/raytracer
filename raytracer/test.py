@@ -5,8 +5,8 @@ from camera import Camera
 from vec3 import Vec3
 from sphere import Sphere
 from ray import Ray
+import math
 from tqdm import tqdm
-from light import AmbientLight, PointLight, DirectionalLight, Light
 
 
 def hit_sphere(ray: Ray, viewport: Viewport, sphere: Sphere):
@@ -36,26 +36,7 @@ def hit_sphere(ray: Ray, viewport: Viewport, sphere: Sphere):
     return True, [t1, t2]
 
 
-def compute_lighting(point: Vec3, lights: list[Light], normal: Vec3):
-    i = 0
-    for light in lights:
-        if isinstance(light, AmbientLight):
-            i += light.intensity
-        else:
-            if isinstance(light, PointLight):
-                L = light.position - point
-            elif isinstance(light, DirectionalLight):
-                L = light.direction
-
-            normal_dot_L = max(normal @ L, 0)  # intensity >= 0
-            i += light.intensity * (normal_dot_L / (normal.mag() * L.mag()))
-
-    return i
-
-
-def trace(
-    ray: Ray, viewport: Viewport, spheres: list[Sphere] = [], lights: list[Light] = []
-):
+def trace(ray: Ray, viewport: Viewport, spheres: list[Sphere] = []):
     """
     Calculates the color of the ray
     """
@@ -72,12 +53,7 @@ def trace(
                     closest_sphere = sphere
 
     if closest_sphere:
-        # calculate normal
-        point = ray.at(closest_t)  # point where ray intersects with sphere
-        normal = (point - closest_sphere.center).unit_vec()
-        lighting = compute_lighting(point, lights, normal)
-
-        return closest_sphere.color * lighting
+        return closest_sphere.color
 
     return Color(1, 1, 1)  # background color
 
@@ -115,14 +91,6 @@ if __name__ == "__main__":
         Sphere(center=Vec3(0, -1, 3), radius=1, color=Color(1, 0, 0)),
         Sphere(center=Vec3(2, 0, 4), radius=1, color=Color(0, 1, 0)),
         Sphere(center=Vec3(-2, 0, 4), radius=1, color=Color(0, 0, 1)),
-        Sphere(center=Vec3(0, -5001, 0), radius=5000, color=Color(1, 1, 0)),
-    ]
-
-    # lights
-    lights = [
-        AmbientLight(intensity=0.2),
-        PointLight(intensity=0.6, position=Vec3(2, 0, 1)),
-        DirectionalLight(intensity=0.2, direction=Vec3(1, 4, 4)),
     ]
 
     # loop thr. pixels
@@ -140,10 +108,10 @@ if __name__ == "__main__":
             direction = viewport_coords - camera.position
             ray = Ray(origin=camera.position, direction=direction)
 
-            color = trace(ray, viewport, spheres, lights)
+            color = trace(ray, viewport, spheres)
             canvas.put_pixel(pixel_loc.x, pixel_loc.y, color)
 
             # update progress bar
             pbar.update(1)
 
-    canvas.image.save("./test2.png")
+    canvas.image.save("./test.png")

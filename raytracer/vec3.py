@@ -5,13 +5,13 @@ class Vec3:
         self.z = z
 
     def __add__(self, other: "Vec3"):
-        return Vec3(self.x + other.x, self.y + other.y, self.z + other.z)
+        return __class__(self.x + other.x, self.y + other.y, self.z + other.z)
 
     def __sub__(self, other: "Vec3"):
-        return Vec3(self.x - other.x, self.y - other.y, self.z - other.z)
+        return self.__class__(self.x - other.x, self.y - other.y, self.z - other.z)
 
     def __mul__(self, scalar: float):
-        return Vec3(self.x * scalar, self.y * scalar, self.z * scalar)
+        return self.__class__(self.x * scalar, self.y * scalar, self.z * scalar)
 
     def __rmul__(self, scalar: float):
         return self * scalar
@@ -24,3 +24,9 @@ class Vec3:
 
     def __matmul__(self, other: "Vec3"):
         return self.x * other.x + self.y * other.y + self.z * other.z
+
+    def mag(self):
+        return (self @ self) ** 0.5
+
+    def unit_vec(self):
+        return self / self.mag()
